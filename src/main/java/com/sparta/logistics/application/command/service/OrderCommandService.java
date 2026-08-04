@@ -9,12 +9,14 @@ import com.sparta.logistics.domain.repository.OrderRepository;
 import com.sparta.logistics.presentation.common.dto.response.ErrorResponseCode;
 import com.sparta.logistics.presentation.common.exception.ApiException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 @Transactional
 public class OrderCommandService implements OrderCommandUseCase {
@@ -33,6 +35,7 @@ public class OrderCommandService implements OrderCommandUseCase {
         );
 
         Order savedOrder = orderRepository.save(order);
+        log.info("Order created : {}", savedOrder.getId());
         return savedOrder.getId();
     }
 }
