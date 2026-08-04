@@ -1,7 +1,10 @@
 package com.sparta.logistics.domain.entity;
 
+import com.sparta.logistics.application.command.dto.CreateOrderCommand;
 import com.sparta.logistics.domain.model.OrderStatus;
 import com.sparta.logistics.infrastructure.persistence.jpa.entity.BaseUpdatableEntity;
+import com.sparta.logistics.presentation.common.dto.response.ErrorResponseCode;
+import com.sparta.logistics.presentation.common.exception.ApiException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -44,4 +47,30 @@ public class Order extends BaseUpdatableEntity {
     @Column(name = "canceled_reason", columnDefinition = "TEXT")
     private String canceledReason;
 
+    public static Order create(
+            UUID receiverCompanyId,
+            UUID productId,
+            Integer quantity,
+            OrderStatus status,
+            String requestMessage,
+            Instant dueDate
+    ) {
+        validateQuantity(quantity);
+
+        Order order = new Order();
+        order.receiverCompanyId = receiverCompanyId;
+        order.productId = productId;
+        order.quantity = quantity;
+        order.status = OrderStatus.PENDING;
+        order.requestMessage = requestMessage;
+        order.dueDate = dueDate;
+
+        return order;
+    }
+
+    private static void validateQuantity(Integer quantity) {
+        if (quantity == null || quantity < 1) {
+            throw new ApiException(ErrorResponseCode.ORDER_INVALID_QUANTITY);
+        }
+    }
 }
