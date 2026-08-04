@@ -1,5 +1,6 @@
 package com.sparta.logistics.domain.entity;
 
+import com.sparta.logistics.domain.model.OrderStatus;
 import com.sparta.logistics.infrastructure.persistence.jpa.entity.BaseUpdatableEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
