@@ -64,4 +64,13 @@ public class OrderCommandService implements OrderCommandUseCase {
         order.cancel(command.canceledReason());
         log.info("Order canceled success :{} {}", command.orderId(), order.getStatus());
     }
+
+    @Override
+    public void deleteOrder(UUID orderId, UUID deletedBy) {
+        Order order = findOrder(orderId);
+
+        order.delete(deletedBy);
+        log.info("Order delete success : {}", orderId);
+        log.info("Order deletedBy : {} {}", deletedBy, order.getDeletedAt());
+    }
 }
