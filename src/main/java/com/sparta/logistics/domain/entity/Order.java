@@ -91,4 +91,18 @@ public class Order extends BaseUpdatableEntity {
             throw new ApiException(ErrorResponseCode.ORDER_CANNOT_BE_UPDATED);
         }
     }
+
+    public void cancel(String canceledReason) {
+        validateCancellable();
+
+        this.status = OrderStatus.CANCELED;
+        this.canceledAt = Instant.now();
+        this.canceledReason = canceledReason;
+    }
+
+    private void validateCancellable() {
+        if (this.status != OrderStatus.PENDING) {
+            throw new ApiException(ErrorResponseCode.ORDER_CANNOT_BE_CANCELLED);
+        }
+    }
 }

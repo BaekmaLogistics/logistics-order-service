@@ -57,4 +57,11 @@ public class OrderCommandService implements OrderCommandUseCase {
                 .orElseThrow(() -> new ApiException(ErrorResponseCode.ORDER_NOT_FOUND));
 
     }
+
+    @Override
+    public void cancelOrder(CancelOrderCommand command) {
+        Order order = findOrder(command.orderId());
+        order.cancel(command.canceledReason());
+        log.info("Order canceled success :{} {}", command.orderId(), order.getStatus());
+    }
 }
