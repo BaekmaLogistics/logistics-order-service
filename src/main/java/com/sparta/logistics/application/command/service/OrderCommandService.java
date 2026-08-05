@@ -29,7 +29,6 @@ public class OrderCommandService implements OrderCommandUseCase {
                 command.receiverCompanyId(),
                 command.productId(),
                 command.quantity(),
-                command.status(),
                 command.requestMessage(),
                 command.dueDate()
         );

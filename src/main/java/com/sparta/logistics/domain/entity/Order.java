@@ -1,6 +1,5 @@
 package com.sparta.logistics.domain.entity;
 
-import com.sparta.logistics.application.command.dto.CreateOrderCommand;
 import com.sparta.logistics.domain.model.OrderStatus;
 import com.sparta.logistics.infrastructure.persistence.jpa.entity.BaseUpdatableEntity;
 import com.sparta.logistics.presentation.common.dto.response.ErrorResponseCode;
@@ -51,7 +50,6 @@ public class Order extends BaseUpdatableEntity {
             UUID receiverCompanyId,
             UUID productId,
             Integer quantity,
-            OrderStatus status,
             String requestMessage,
             Instant dueDate
     ) {

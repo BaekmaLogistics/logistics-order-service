@@ -19,7 +19,6 @@ public record CreateOrderRequest(
                 receiverCompanyId,
                 productId,
                 quantity,
-                null,
                 requestMessage,
                 dueDate
         );
