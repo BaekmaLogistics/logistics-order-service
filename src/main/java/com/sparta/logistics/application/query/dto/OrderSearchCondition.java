@@ -10,7 +10,7 @@ public record OrderSearchCondition(
         UUID productId,
         UUID deliveryId,
         OrderStatus status,
-        Instant fromDueDate,
-        Instant toDueDate
+        Instant startDate,
+        Instant endDate
 ) {
 }

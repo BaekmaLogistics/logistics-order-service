@@ -43,8 +43,8 @@ public class OrderQueryService implements OrderQueryUseCase {
                 .and(productIdEquals(condition.productId()))
                 .and(deliveryIdEquals(condition.deliveryId()))
                 .and(statusEquals(condition.status()))
-                .and(dueDateGreaterThanOrEqual(condition.fromDueDate()))
-                .and(dueDateLessThanOrEqual(condition.toDueDate()));
+                .and(dueDateGreaterThanOrEqual(condition.startDate()))
+                .and(dueDateLessThanOrEqual(condition.endDate()));
 
         return orderRepository.findAll(specification, pageable)
                 .map(OrderSearchResponse::from);
@@ -81,17 +81,17 @@ public class OrderQueryService implements OrderQueryUseCase {
 
     }
 
-    private Specification<Order> dueDateGreaterThanOrEqual(Instant fromDueDate) {
-        return (root, query, criteriaBuilder) -> fromDueDate == null
+    private Specification<Order> dueDateGreaterThanOrEqual(Instant startDate) {
+        return (root, query, criteriaBuilder) -> startDate == null
                 ? criteriaBuilder.conjunction()
-                : criteriaBuilder.greaterThanOrEqualTo(root.get("dueDate"), fromDueDate);
+                : criteriaBuilder.greaterThanOrEqualTo(root.get("dueDate"), startDate);
 
     }
 
-    private Specification<Order> dueDateLessThanOrEqual(Instant toDueDate) {
-        return (root, query, criteriaBuilder) -> toDueDate == null
+    private Specification<Order> dueDateLessThanOrEqual(Instant endDate) {
+        return (root, query, criteriaBuilder) -> endDate == null
                 ? criteriaBuilder.conjunction()
-                : criteriaBuilder.lessThanOrEqualTo(root.get("dueDate"), toDueDate);
+                : criteriaBuilder.lessThanOrEqualTo(root.get("dueDate"), endDate);
 
     }
 }

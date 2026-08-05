@@ -41,8 +41,8 @@ public class OrderQueryController {
             @RequestParam(required = false) UUID productId,
             @RequestParam(required = false) UUID deliveryId,
             @RequestParam(required = false) OrderStatus status,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant fromDueDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant toDueDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant endDate,
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
         OrderSearchCondition condition = new OrderSearchCondition(
@@ -50,8 +50,8 @@ public class OrderQueryController {
                 productId,
                 deliveryId,
                 status,
-                fromDueDate,
-                toDueDate
+                startDate,
+                endDate
         );
 
         Page<OrderSearchResponse> response = orderQueryUseCase.searchOrder(condition, pageable);
