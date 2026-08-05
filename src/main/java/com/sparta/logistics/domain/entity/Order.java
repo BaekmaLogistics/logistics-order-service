@@ -1,6 +1,5 @@
 package com.sparta.logistics.domain.entity;
 
-import com.sparta.logistics.application.command.dto.CreateOrderCommand;
 import com.sparta.logistics.domain.model.OrderStatus;
 import com.sparta.logistics.infrastructure.persistence.jpa.entity.BaseUpdatableEntity;
 import com.sparta.logistics.presentation.common.dto.response.ErrorResponseCode;
@@ -51,7 +50,6 @@ public class Order extends BaseUpdatableEntity {
             UUID receiverCompanyId,
             UUID productId,
             Integer quantity,
-            OrderStatus status,
             String requestMessage,
             Instant dueDate
     ) {
@@ -71,6 +69,26 @@ public class Order extends BaseUpdatableEntity {
     private static void validateQuantity(Integer quantity) {
         if (quantity == null || quantity < 1) {
             throw new ApiException(ErrorResponseCode.ORDER_INVALID_QUANTITY);
+        }
+    }
+
+
+    public void update(
+            Integer quantity,
+            String requestMessage,
+            Instant dueDate
+    ) {
+        validateUpdatable();
+        validateQuantity(quantity);
+
+        this.quantity = quantity;
+        this.requestMessage = requestMessage;
+        this.dueDate = dueDate;
+    }
+
+    private void validateUpdatable() {
+        if (this.status != OrderStatus.PENDING) {
+            throw new ApiException(ErrorResponseCode.ORDER_CANNOT_BE_UPDATED);
         }
     }
 }
