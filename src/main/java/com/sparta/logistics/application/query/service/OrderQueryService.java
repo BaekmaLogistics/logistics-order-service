@@ -1,16 +1,23 @@
 package com.sparta.logistics.application.query.service;
 
 import com.sparta.logistics.application.query.dto.OrderDetailResponse;
+import com.sparta.logistics.application.query.dto.OrderSearchCondition;
+import com.sparta.logistics.application.query.dto.OrderSearchResponse;
 import com.sparta.logistics.application.query.usecase.OrderQueryUseCase;
 import com.sparta.logistics.domain.entity.Order;
+import com.sparta.logistics.domain.model.OrderStatus;
 import com.sparta.logistics.domain.repository.OrderRepository;
 import com.sparta.logistics.presentation.common.dto.response.ErrorResponseCode;
 import com.sparta.logistics.presentation.common.exception.ApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @Service
@@ -27,5 +34,64 @@ public class OrderQueryService implements OrderQueryUseCase {
                 .orElseThrow(() -> new ApiException(ErrorResponseCode.ORDER_NOT_FOUND));
 
         return OrderDetailResponse.from(order);
+    }
+
+    @Override
+    public Page<OrderSearchResponse> searchOrder(OrderSearchCondition condition, Pageable pageable) {
+        Specification<Order> specification = notDeleted()
+                .and(receiverCompanyIdEquals(condition.receiverCompanyId()))
+                .and(productIdEquals(condition.productId()))
+                .and(deliveryIdEquals(condition.deliveryId()))
+                .and(statusEquals(condition.status()))
+                .and(dueDateGreaterThanOrEqual(condition.fromDueDate()))
+                .and(dueDateLessThanOrEqual(condition.toDueDate()));
+
+        return orderRepository.findAll(specification, pageable)
+                .map(OrderSearchResponse::from);
+    }
+
+    private Specification<Order> notDeleted() {
+        return (root, query, criteriaBuilder)
+                -> criteriaBuilder.isNull(root.get("deletedAt"));
+    }
+
+    private Specification<Order> receiverCompanyIdEquals(UUID receiverCompanyId) {
+        return (root, query, criteriaBuilder) -> receiverCompanyId == null
+                ? criteriaBuilder.conjunction()
+                : criteriaBuilder.equal(root.get("receiverCompanyId"), receiverCompanyId);
+    }
+
+    private Specification<Order> productIdEquals(UUID productId) {
+        return (root, query, criteriaBuilder) -> productId == null
+                ? criteriaBuilder.conjunction()
+                : criteriaBuilder.equal(root.get("productId"), productId);
+
+    }
+
+    private Specification<Order> deliveryIdEquals(UUID deliveryId) {
+        return (root, query, criteriaBuilder) -> deliveryId == null
+                ? criteriaBuilder.conjunction()
+                : criteriaBuilder.equal(root.get("deliveryId"), deliveryId);
+    }
+
+    private Specification<Order> statusEquals(OrderStatus status) {
+        return (root, query, criteriaBuilder) -> status == null
+                ? criteriaBuilder.conjunction()
+                : criteriaBuilder.equal(root.get("status"), status);
+
+    }
+
+    private Specification<Order> dueDateGreaterThanOrEqual(Instant fromDueDate) {
+        return (root, query, criteriaBuilder) -> fromDueDate == null
+                ? criteriaBuilder.conjunction()
+                : criteriaBuilder.greaterThanOrEqualTo(root.get("dueDate"), fromDueDate);
+
+    }
+
+    private Specification<Order> dueDateLessThanOrEqual(Instant toDueDate) {
+        return (root, query, criteriaBuilder) -> toDueDate == null
+                ? criteriaBuilder.conjunction()
+                : criteriaBuilder.lessThanOrEqualTo(root.get("dueDate"), toDueDate);
+
     }
 }
