@@ -10,4 +10,5 @@ public interface OrderCommandUseCase {
     UUID createOrder(CreateOrderCommand command);
     void updateOrder(UpdateOrderCommand command);
     void cancelOrder(CancelOrderCommand command);
+    void deleteOrder(UUID orderId, UUID deletedBy);
 }

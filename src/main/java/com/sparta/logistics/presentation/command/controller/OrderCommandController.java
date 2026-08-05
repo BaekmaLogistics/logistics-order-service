@@ -4,6 +4,7 @@ import com.sparta.logistics.application.command.usecase.OrderCommandUseCase;
 import com.sparta.logistics.presentation.command.dto.CancelOrderRequest;
 import com.sparta.logistics.presentation.command.dto.CreateOrderRequest;
 import com.sparta.logistics.presentation.command.dto.UpdateOrderRequest;
+import com.sparta.logistics.presentation.common.constant.HeaderConstants;
 import com.sparta.logistics.presentation.common.dto.response.GeneralResponse;
 import com.sparta.logistics.presentation.common.dto.response.GeneralResponseCode;
 import jakarta.validation.Valid;
@@ -45,6 +46,16 @@ public class OrderCommandController {
             @Valid @RequestBody CancelOrderRequest request
     ) {
         orderCommandUseCase.cancelOrder(request.toCommand(orderId));
+
+        return GeneralResponse.toResponseEntity(GeneralResponseCode.OK, null);
+    }
+
+    @DeleteMapping("/{orderId}")
+    public ResponseEntity<GeneralResponse<Void>> deleteOrder(
+            @PathVariable UUID orderId,
+            @RequestHeader(name = HeaderConstants.USER_ID) UUID deletedBy
+    ) {
+        orderCommandUseCase.deleteOrder(orderId, deletedBy);
 
         return GeneralResponse.toResponseEntity(GeneralResponseCode.OK, null);
     }

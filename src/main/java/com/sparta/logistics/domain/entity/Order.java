@@ -105,4 +105,18 @@ public class Order extends BaseUpdatableEntity {
             throw new ApiException(ErrorResponseCode.ORDER_CANNOT_BE_CANCELLED);
         }
     }
+
+    public void delete(UUID deletedBy) {
+        validateDeletable();
+        softDelete(deletedBy);
+    }
+
+    private void validateDeletable() {
+        if (getDeletedAt() != null) {
+            throw new ApiException(ErrorResponseCode.ORDER_CANNOT_BE_DELETED);
+        }
+        if (this.status == OrderStatus.DELIVERY_REQUESTED || this.status == OrderStatus.DELIVERING) {
+            throw new ApiException(ErrorResponseCode.ORDER_CANNOT_BE_DELETED);
+        }
+    }
 }
