@@ -9,4 +9,5 @@ import java.util.UUID;
 public interface OrderCommandUseCase {
     UUID createOrder(CreateOrderCommand command);
     void updateOrder(UpdateOrderCommand command);
+    void cancelOrder(CancelOrderCommand command);
 }

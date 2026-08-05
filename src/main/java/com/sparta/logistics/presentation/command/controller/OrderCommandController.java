@@ -1,6 +1,7 @@
 package com.sparta.logistics.presentation.command.controller;
 
 import com.sparta.logistics.application.command.usecase.OrderCommandUseCase;
+import com.sparta.logistics.presentation.command.dto.CancelOrderRequest;
 import com.sparta.logistics.presentation.command.dto.CreateOrderRequest;
 import com.sparta.logistics.presentation.command.dto.UpdateOrderRequest;
 import com.sparta.logistics.presentation.common.dto.response.GeneralResponse;
@@ -34,6 +35,16 @@ public class OrderCommandController {
             @Valid @RequestBody UpdateOrderRequest request
     ) {
         orderCommandUseCase.updateOrder(request.toCommand(orderId));
+
+        return GeneralResponse.toResponseEntity(GeneralResponseCode.OK, null);
+    }
+
+    @PatchMapping("/{orderId}/cancel")
+    public ResponseEntity<GeneralResponse<Void>> cancelOrder(
+            @PathVariable UUID orderId,
+            @Valid @RequestBody CancelOrderRequest request
+    ) {
+        orderCommandUseCase.cancelOrder(request.toCommand(orderId));
 
         return GeneralResponse.toResponseEntity(GeneralResponseCode.OK, null);
     }
