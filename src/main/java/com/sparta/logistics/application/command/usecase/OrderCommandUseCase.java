@@ -1,6 +1,7 @@
 package com.sparta.logistics.application.command.usecase;
 
 import com.sparta.logistics.application.command.dto.CancelOrderCommand;
+import com.sparta.logistics.application.command.dto.ChangeOrderStatusCommand;
 import com.sparta.logistics.application.command.dto.CreateOrderCommand;
 import com.sparta.logistics.application.command.dto.UpdateOrderCommand;
 
@@ -11,4 +12,5 @@ public interface OrderCommandUseCase {
     void updateOrder(UpdateOrderCommand command);
     void cancelOrder(CancelOrderCommand command);
     void deleteOrder(UUID orderId, UUID deletedBy);
+    void changeOrderStatus(ChangeOrderStatusCommand command);
 }

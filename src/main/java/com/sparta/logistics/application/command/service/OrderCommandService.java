@@ -1,6 +1,7 @@
 package com.sparta.logistics.application.command.service;
 
 import com.sparta.logistics.application.command.dto.CancelOrderCommand;
+import com.sparta.logistics.application.command.dto.ChangeOrderStatusCommand;
 import com.sparta.logistics.application.command.dto.CreateOrderCommand;
 import com.sparta.logistics.application.command.dto.UpdateOrderCommand;
 import com.sparta.logistics.application.command.usecase.OrderCommandUseCase;
@@ -21,7 +22,6 @@ import java.util.UUID;
 @Transactional
 public class OrderCommandService implements OrderCommandUseCase {
     private final OrderRepository orderRepository;
-
 
     @Override
     public UUID createOrder(CreateOrderCommand command) {
@@ -72,5 +72,13 @@ public class OrderCommandService implements OrderCommandUseCase {
         order.delete(deletedBy);
         log.info("Order delete success : {}", orderId);
         log.info("Order deletedBy : {} {}", deletedBy, order.getDeletedAt());
+    }
+
+    @Override
+    public void changeOrderStatus(ChangeOrderStatusCommand command) {
+        Order order = findOrder(command.orderId());
+        order.changeStatus(command.status());
+
+        log.info("주문 상태가 변경되었습니다 : {} {}", command.orderId(), order.getStatus());
     }
 }
