@@ -119,4 +119,32 @@ public class Order extends BaseUpdatableEntity {
             throw new ApiException(ErrorResponseCode.ORDER_CANNOT_BE_DELETED);
         }
     }
+
+    public void changeStatus(OrderStatus nextStatus) {
+        validateStatusChangeable(nextStatus);
+        this.status = nextStatus;
+    }
+
+    private void validateStatusChangeable(OrderStatus nextStatus) {
+        if (getDeletedAt() != null) {
+            throw new ApiException(ErrorResponseCode.ORDER_CANNOT_CHANGE_STATUS);
+        }
+
+        if (nextStatus == null) {
+            throw new ApiException(ErrorResponseCode.INVALID_REQUEST);
+        }
+
+        if (!isAllowedStatusTransition(this.status, nextStatus)) {
+            throw new ApiException(ErrorResponseCode.ORDER_CANNOT_CHANGE_STATUS);
+        }
+    }
+
+    private boolean isAllowedStatusTransition(OrderStatus currentStatus, OrderStatus nextStatus) {
+        return switch (currentStatus) {
+            case PENDING -> nextStatus == OrderStatus.DELIVERY_REQUESTED;
+            case DELIVERY_REQUESTED -> nextStatus == OrderStatus.DELIVERING;
+            case DELIVERING -> nextStatus == OrderStatus.COMPLETED;
+            case COMPLETED, CANCELED, FAILED -> false;
+        };
+    }
 }

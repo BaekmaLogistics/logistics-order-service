@@ -3,6 +3,7 @@ package com.sparta.logistics.presentation.query.controller;
 import com.sparta.logistics.application.query.dto.OrderDetailResponse;
 import com.sparta.logistics.application.query.dto.OrderSearchCondition;
 import com.sparta.logistics.application.query.dto.OrderSearchResponse;
+import com.sparta.logistics.application.query.dto.OrderStatsResponse;
 import com.sparta.logistics.application.query.usecase.OrderQueryUseCase;
 import com.sparta.logistics.domain.model.OrderStatus;
 import com.sparta.logistics.presentation.common.dto.response.GeneralResponse;
@@ -55,6 +56,29 @@ public class OrderQueryController {
         );
 
         Page<OrderSearchResponse> response = orderQueryUseCase.searchOrder(condition, pageable);
+
+        return GeneralResponse.toResponseEntity(GeneralResponseCode.OK, response);
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<GeneralResponse<OrderStatsResponse >> getOrderStats(
+            @RequestParam(required = false) UUID receiverCompanyId,
+            @RequestParam(required = false) UUID productId,
+            @RequestParam(required = false) UUID deliveryId,
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant endDate
+    ) {
+        OrderSearchCondition condition = new OrderSearchCondition(
+                receiverCompanyId,
+                productId,
+                deliveryId,
+                status,
+                startDate,
+                endDate
+        );
+
+        OrderStatsResponse response = orderQueryUseCase.getOrderStats(condition);
 
         return GeneralResponse.toResponseEntity(GeneralResponseCode.OK, response);
     }
