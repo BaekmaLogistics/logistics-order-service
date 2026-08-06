@@ -3,6 +3,7 @@ package com.sparta.logistics.application.query.service;
 import com.sparta.logistics.application.query.dto.OrderDetailResponse;
 import com.sparta.logistics.application.query.dto.OrderSearchCondition;
 import com.sparta.logistics.application.query.dto.OrderSearchResponse;
+import com.sparta.logistics.application.query.dto.OrderStatsResponse;
 import com.sparta.logistics.application.query.usecase.OrderQueryUseCase;
 import com.sparta.logistics.domain.entity.Order;
 import com.sparta.logistics.domain.model.OrderStatus;
@@ -18,7 +19,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -38,15 +45,7 @@ public class OrderQueryService implements OrderQueryUseCase {
 
     @Override
     public Page<OrderSearchResponse> searchOrder(OrderSearchCondition condition, Pageable pageable) {
-        Specification<Order> specification = notDeleted()
-                .and(receiverCompanyIdEquals(condition.receiverCompanyId()))
-                .and(productIdEquals(condition.productId()))
-                .and(deliveryIdEquals(condition.deliveryId()))
-                .and(statusEquals(condition.status()))
-                .and(dueDateGreaterThanOrEqual(condition.startDate()))
-                .and(dueDateLessThanOrEqual(condition.endDate()));
-
-        return orderRepository.findAll(specification, pageable)
+        return orderRepository.findAll(buildSpecification(condition), pageable)
                 .map(OrderSearchResponse::from);
     }
 
@@ -93,5 +92,41 @@ public class OrderQueryService implements OrderQueryUseCase {
                 ? criteriaBuilder.conjunction()
                 : criteriaBuilder.lessThanOrEqualTo(root.get("dueDate"), endDate);
 
+    }
+
+
+    @Override
+    public OrderStatsResponse getOrderStats(OrderSearchCondition condition) {
+        List<Order> orders = orderRepository.findAll(buildSpecification(condition));
+
+        Map<OrderStatus, Long> statusCount = orders.stream()
+                .collect(Collectors.groupingBy(Order::getStatus, Collectors.counting()));
+
+        Map<UUID, Long> receiverCompanyCount = orders.stream()
+                .collect(Collectors.groupingBy(Order::getReceiverCompanyId, Collectors.counting()));
+
+        Map<LocalDate, Long> dailyCounts = orders.stream()
+                .collect(Collectors.groupingBy(
+                        order -> LocalDate.ofInstant(order.getDueDate(), ZoneId.of("Asia/Seoul")),
+                        TreeMap::new,
+                        Collectors.counting()
+                ));
+
+        return new OrderStatsResponse(
+                orders.size(),
+                statusCount,
+                receiverCompanyCount,
+                dailyCounts
+        );
+    }
+
+    private Specification<Order> buildSpecification(OrderSearchCondition condition) {
+        return notDeleted()
+                .and(receiverCompanyIdEquals(condition.receiverCompanyId()))
+                .and(productIdEquals(condition.productId()))
+                .and(deliveryIdEquals(condition.deliveryId()))
+                .and(statusEquals(condition.status()))
+                .and(dueDateGreaterThanOrEqual(condition.startDate()))
+                .and(dueDateLessThanOrEqual(condition.endDate()));
     }
 }
