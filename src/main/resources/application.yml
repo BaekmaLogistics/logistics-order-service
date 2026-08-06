@@ -42,6 +42,8 @@ spring:
 services:
   delivery:
     url: ${DELIVERY_SERVICE_URL:http://localhost:8083}
+  company-product:
+    url: ${COMPANY_PRODUCT_SERVICE_URL:http://localhost:8085}
 
 message:
   exchange: baekma.exchange # Producer만 적용

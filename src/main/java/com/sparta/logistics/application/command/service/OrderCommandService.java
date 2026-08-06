@@ -8,6 +8,7 @@ import com.sparta.logistics.application.command.usecase.OrderCommandUseCase;
 import com.sparta.logistics.domain.entity.Order;
 import com.sparta.logistics.domain.repository.OrderRepository;
 import com.sparta.logistics.infrastructure.feign.client.DeliveryClient;
+import com.sparta.logistics.infrastructure.feign.client.ProductClient;
 import com.sparta.logistics.infrastructure.feign.dto.DeliveryResponse;
 import com.sparta.logistics.infrastructure.feign.dto.CreateDeliveryRequest;
 import com.sparta.logistics.presentation.common.dto.response.ErrorResponseCode;
@@ -27,9 +28,12 @@ import java.util.UUID;
 public class OrderCommandService implements OrderCommandUseCase {
     private final OrderRepository orderRepository;
     private final DeliveryClient deliveryClient;
+    private final ProductClient productClient;
 
     @Override
     public UUID createOrder(CreateOrderCommand command) {
+        productClient.getProduct(command.productId());
+
         Order order = Order.create(
                 command.receiverCompanyId(),
                 command.productId(),
