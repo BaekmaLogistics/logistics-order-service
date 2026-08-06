@@ -7,7 +7,11 @@ import com.sparta.logistics.application.command.dto.UpdateOrderCommand;
 import com.sparta.logistics.application.command.usecase.OrderCommandUseCase;
 import com.sparta.logistics.domain.entity.Order;
 import com.sparta.logistics.domain.repository.OrderRepository;
+import com.sparta.logistics.infrastructure.feign.client.DeliveryClient;
+import com.sparta.logistics.infrastructure.feign.dto.DeliveryResponse;
+import com.sparta.logistics.infrastructure.feign.dto.CreateDeliveryRequest;
 import com.sparta.logistics.presentation.common.dto.response.ErrorResponseCode;
+import com.sparta.logistics.presentation.common.dto.response.GeneralResponse;
 import com.sparta.logistics.presentation.common.exception.ApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +26,7 @@ import java.util.UUID;
 @Transactional
 public class OrderCommandService implements OrderCommandUseCase {
     private final OrderRepository orderRepository;
+    private final DeliveryClient deliveryClient;
 
     @Override
     public UUID createOrder(CreateOrderCommand command) {
@@ -34,7 +39,13 @@ public class OrderCommandService implements OrderCommandUseCase {
         );
 
         Order savedOrder = orderRepository.save(order);
+
+        GeneralResponse<DeliveryResponse> deliveryResponse
+                = deliveryClient.createDelivery(CreateDeliveryRequest.from(savedOrder.getId(), command));
+        savedOrder.assignDelivery(deliveryResponse.data().id());
+
         log.info("Order created : {}", savedOrder.getId());
+        log.info("Delivery created : {}", savedOrder.getDeliveryId());
         return savedOrder.getId();
     }
 

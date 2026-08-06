@@ -147,4 +147,13 @@ public class Order extends BaseUpdatableEntity {
             case COMPLETED, CANCELED, FAILED -> false;
         };
     }
+
+    public void assignDelivery(UUID deliveryId) {
+        if (deliveryId == null) {
+            throw new ApiException(ErrorResponseCode.INVALID_REQUEST);
+        }
+
+        this.deliveryId = deliveryId;
+        this.status = OrderStatus.DELIVERY_REQUESTED;
+    }
 }

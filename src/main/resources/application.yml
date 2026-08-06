@@ -39,6 +39,9 @@ spring:
             connect-timeout: 5000
             read-timeout: 3000
             logger-level: basic
+services:
+  delivery:
+    url: ${DELIVERY_SERVICE_URL:http://localhost:8083}
 
 message:
   exchange: baekma.exchange # Producer만 적용
