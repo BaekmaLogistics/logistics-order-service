@@ -10,8 +10,9 @@ import com.sparta.logistics.domain.repository.OrderRepository;
 import com.sparta.logistics.infrastructure.feign.client.DeliveryClient;
 import com.sparta.logistics.infrastructure.feign.client.HubClient;
 import com.sparta.logistics.infrastructure.feign.client.ProductClient;
-import com.sparta.logistics.infrastructure.feign.dto.DeliveryResponse;
+import com.sparta.logistics.infrastructure.feign.dto.CancelDeliveryRequest;
 import com.sparta.logistics.infrastructure.feign.dto.CreateDeliveryRequest;
+import com.sparta.logistics.infrastructure.feign.dto.DeliveryResponse;
 import com.sparta.logistics.infrastructure.feign.dto.HubStockRequest;
 import com.sparta.logistics.presentation.common.dto.response.ErrorResponseCode;
 import com.sparta.logistics.presentation.common.dto.response.GeneralResponse;
@@ -38,6 +39,7 @@ public class OrderCommandService implements OrderCommandUseCase {
         productClient.getProduct(command.productId());
 
         Order order = Order.create(
+                command.departureHubId(),
                 command.receiverCompanyId(),
                 command.productId(),
                 command.quantity(),
@@ -88,7 +90,26 @@ public class OrderCommandService implements OrderCommandUseCase {
     @Override
     public void cancelOrder(CancelOrderCommand command) {
         Order order = findOrder(command.orderId());
+
+        if (order.getDeliveryId() != null) {
+            try {
+                deliveryClient.cancelDelivery(
+                        order.getDeliveryId(),
+                        CancelDeliveryRequest.from(command)
+                );
+            } catch (Exception e) {
+                throw new ApiException(ErrorResponseCode.ORDER_DELIVERY_CANCEL_FAILED);
+            }
+         }
+
+        try {
+            hubClient.increaseStock(HubStockRequest.from(order));
+        } catch (Exception e) {
+            throw new ApiException(ErrorResponseCode.ORDER_STOCK_RESTORE_FAILED);
+        }
+
         order.cancel(command.canceledReason());
+
         log.info("Order canceled success :{} {}", command.orderId(), order.getStatus());
     }
 

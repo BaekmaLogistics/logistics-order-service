@@ -18,6 +18,9 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Order extends BaseUpdatableEntity {
 
+    @Column(name = "departure_hub_id", nullable = false, columnDefinition = "UUID")
+    private UUID departureHubId;
+
     @Column(name = "receiver_company_id", nullable = false, columnDefinition = "UUID")
     private UUID receiverCompanyId;
 
@@ -47,6 +50,7 @@ public class Order extends BaseUpdatableEntity {
     private String canceledReason;
 
     public static Order create(
+            UUID departureHubId,
             UUID receiverCompanyId,
             UUID productId,
             Integer quantity,
@@ -54,8 +58,10 @@ public class Order extends BaseUpdatableEntity {
             Instant dueDate
     ) {
         validateQuantity(quantity);
+        validateDepartureHubId(departureHubId);
 
         Order order = new Order();
+        order.departureHubId = departureHubId;
         order.receiverCompanyId = receiverCompanyId;
         order.productId = productId;
         order.quantity = quantity;
@@ -64,6 +70,12 @@ public class Order extends BaseUpdatableEntity {
         order.dueDate = dueDate;
 
         return order;
+    }
+
+    private static void validateDepartureHubId(UUID departureHubId) {
+        if (departureHubId == null) {
+            throw new ApiException(ErrorResponseCode.INVALID_REQUEST);
+        }
     }
 
     public void fail() {
