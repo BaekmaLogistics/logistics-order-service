@@ -20,10 +20,10 @@ spring:
         use_sql_comments: true
         impl.uuid_binary_compatibility: true
   # Redis 설정, Redis 사용하지 않을 시 주석처리
-#  data:
-##    redis:
-##      host: ${REDIS_HOST:localhost}
-##      port: ${REDIS_PORT:6379}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 
   rabbitmq:
     host: ${RABBITMQ_HOST}
@@ -44,8 +44,6 @@ services:
     url: ${DELIVERY_SERVICE_URL:http://localhost:8083}
   company-product:
     url: ${COMPANY_PRODUCT_SERVICE_URL:http://localhost:8085}
-  hub:
-    url: ${HUB_URL:http://localhost:8082}
 
 message:
   exchange: baekma.exchange # Producer만 적용
@@ -55,14 +53,8 @@ message:
     notification: notification.queue
 
 management:
-  health:
-    redis:
-      enabled: false
-    rabbit:
-      enabled: false
-
   tracing:
-    enabled: false
+    enabled: true
     sampling:
       probability: 1.0
 
