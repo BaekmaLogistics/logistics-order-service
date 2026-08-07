@@ -66,6 +66,10 @@ public class Order extends BaseUpdatableEntity {
         return order;
     }
 
+    public void fail() {
+        this.status = OrderStatus.FAILED;
+    }
+
     private static void validateQuantity(Integer quantity) {
         if (quantity == null || quantity < 1) {
             throw new ApiException(ErrorResponseCode.ORDER_INVALID_QUANTITY);
