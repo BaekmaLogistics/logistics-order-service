@@ -116,8 +116,8 @@ public class Order extends BaseUpdatableEntity {
         this.canceledReason = canceledReason;
     }
 
-    private void validateCancellable() {
-        if (this.status != OrderStatus.PENDING) {
+    public void validateCancellable() {
+        if (this.status != OrderStatus.PENDING && this.status != OrderStatus.DELIVERY_REQUESTED) {
             throw new ApiException(ErrorResponseCode.ORDER_CANNOT_BE_CANCELLED);
         }
     }

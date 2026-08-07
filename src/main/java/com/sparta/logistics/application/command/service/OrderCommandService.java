@@ -35,6 +35,7 @@ public class OrderCommandService implements OrderCommandUseCase {
     private final HubClient hubClient;
 
     @Override
+    @Transactional(noRollbackFor = ApiException.class)
     public UUID createOrder(CreateOrderCommand command) {
         productClient.getProduct(command.productId());
 
@@ -57,8 +58,12 @@ public class OrderCommandService implements OrderCommandUseCase {
                     deliveryClient.createDelivery(CreateDeliveryRequest.from(savedOrder.getId(), command));
             savedOrder.assignDelivery(deliveryResponse.data().id());
         } catch (Exception e) {
-            hubClient.increaseStock(stockRequest);
             savedOrder.fail();
+            try {
+                hubClient.increaseStock(stockRequest);
+            } catch (Exception ex) {
+                throw new ApiException(ErrorResponseCode.ORDER_STOCK_RESTORE_FAILED);
+            }
             throw new ApiException(ErrorResponseCode.ORDER_DELIVERY_CREATE_FAILED);
         }
 
@@ -90,6 +95,7 @@ public class OrderCommandService implements OrderCommandUseCase {
     @Override
     public void cancelOrder(CancelOrderCommand command) {
         Order order = findOrder(command.orderId());
+        order.validateCancellable();
 
         if (order.getDeliveryId() != null) {
             try {
@@ -100,7 +106,7 @@ public class OrderCommandService implements OrderCommandUseCase {
             } catch (Exception e) {
                 throw new ApiException(ErrorResponseCode.ORDER_DELIVERY_CANCEL_FAILED);
             }
-         }
+        }
 
         try {
             hubClient.increaseStock(HubStockRequest.from(order));
