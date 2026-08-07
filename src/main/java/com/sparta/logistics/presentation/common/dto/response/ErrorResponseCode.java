@@ -20,8 +20,7 @@ public enum ErrorResponseCode implements ApiResponseCode {
     ORDER_CANNOT_BE_CANCELLED(HttpStatus.BAD_REQUEST, "ORDER_0005", "취소할 수 없는 주문 상태입니다."),
     ORDER_CANNOT_BE_DELETED(HttpStatus.BAD_REQUEST, "ORDER_0006", "삭제할 수 없는 주문 상태입니다."),
     ORDER_ACCESS_DENIED(HttpStatus.FORBIDDEN, "ORDER_0007", "주문에 접근할 권한이 없습니다."),
-    ORDER_CANNOT_CHANGE_STATUS(HttpStatus.BAD_REQUEST, "ORDER_0008", "변경할 수 없는 주문 상태입니다."),
-    ORDER_DELIVERY_CREATE_FAILED(HttpStatus.BAD_GATEWAY, "ORDER_0009", "배송 생성 요청에 실패했습니다.");
+    ORDER_CANNOT_CHANGE_STATUS(HttpStatus.BAD_REQUEST, "ORDER_0008", "변경할 수 없는 주문 상태입니다.");
 
 
     private final HttpStatus status;

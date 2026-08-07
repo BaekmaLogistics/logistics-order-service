@@ -11,7 +11,7 @@ import java.util.UUID;
 @FeignClient(name = "company-product-service", url = "${services.company-product.url}")
 public interface ProductClient {
 
-    @GetMapping("/internal/api/v1/products/{productId}")
+    @GetMapping("/api/v1/products/{productId}")
     GeneralResponse<ProductResponse> getProduct(
             @PathVariable("productId") UUID productId
     );
