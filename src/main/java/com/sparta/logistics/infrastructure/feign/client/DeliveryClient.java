@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @FeignClient(name = "delivery-service", url = "${services.delivery.url}")
 public interface DeliveryClient {
-    @PostMapping("/api/v1/deliveries/internal")
+    @PostMapping("/internal/api/v1/deliveries")
     GeneralResponse<DeliveryResponse> createDelivery(
             @RequestBody CreateDeliveryRequest request
     );

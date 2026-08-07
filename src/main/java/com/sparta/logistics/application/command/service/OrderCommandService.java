@@ -8,9 +8,11 @@ import com.sparta.logistics.application.command.usecase.OrderCommandUseCase;
 import com.sparta.logistics.domain.entity.Order;
 import com.sparta.logistics.domain.repository.OrderRepository;
 import com.sparta.logistics.infrastructure.feign.client.DeliveryClient;
+import com.sparta.logistics.infrastructure.feign.client.HubClient;
 import com.sparta.logistics.infrastructure.feign.client.ProductClient;
 import com.sparta.logistics.infrastructure.feign.dto.DeliveryResponse;
 import com.sparta.logistics.infrastructure.feign.dto.CreateDeliveryRequest;
+import com.sparta.logistics.infrastructure.feign.dto.HubStockRequest;
 import com.sparta.logistics.presentation.common.dto.response.ErrorResponseCode;
 import com.sparta.logistics.presentation.common.dto.response.GeneralResponse;
 import com.sparta.logistics.presentation.common.exception.ApiException;
@@ -29,6 +31,7 @@ public class OrderCommandService implements OrderCommandUseCase {
     private final OrderRepository orderRepository;
     private final DeliveryClient deliveryClient;
     private final ProductClient productClient;
+    private final HubClient hubClient;
 
     @Override
     public UUID createOrder(CreateOrderCommand command) {
@@ -44,9 +47,18 @@ public class OrderCommandService implements OrderCommandUseCase {
 
         Order savedOrder = orderRepository.save(order);
 
-        GeneralResponse<DeliveryResponse> deliveryResponse
-                = deliveryClient.createDelivery(CreateDeliveryRequest.from(savedOrder.getId(), command));
-        savedOrder.assignDelivery(deliveryResponse.data().id());
+        HubStockRequest stockRequest = HubStockRequest.from(command);
+        hubClient.decreaseStock(stockRequest);
+
+        try {
+            GeneralResponse<DeliveryResponse> deliveryResponse =
+                    deliveryClient.createDelivery(CreateDeliveryRequest.from(savedOrder.getId(), command));
+            savedOrder.assignDelivery(deliveryResponse.data().id());
+        } catch (Exception e) {
+            hubClient.increaseStock(stockRequest);
+            savedOrder.fail();
+            throw new ApiException(ErrorResponseCode.ORDER_DELIVERY_CREATE_FAILED);
+        }
 
         log.info("Order created : {}", savedOrder.getId());
         log.info("Delivery created : {}", savedOrder.getDeliveryId());
