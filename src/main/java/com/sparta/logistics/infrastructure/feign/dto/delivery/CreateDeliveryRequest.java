@@ -1,4 +1,4 @@
-package com.sparta.logistics.infrastructure.feign.dto;
+package com.sparta.logistics.infrastructure.feign.dto.delivery;
 
 import com.sparta.logistics.application.command.dto.CreateOrderCommand;
 

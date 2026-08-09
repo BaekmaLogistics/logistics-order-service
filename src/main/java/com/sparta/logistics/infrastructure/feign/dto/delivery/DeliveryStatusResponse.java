@@ -1,4 +1,4 @@
-package com.sparta.logistics.infrastructure.feign.dto;
+package com.sparta.logistics.infrastructure.feign.dto.delivery;
 
 import java.util.UUID;
 

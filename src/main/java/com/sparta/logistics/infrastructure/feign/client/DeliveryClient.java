@@ -1,9 +1,9 @@
 package com.sparta.logistics.infrastructure.feign.client;
 
-import com.sparta.logistics.infrastructure.feign.dto.CancelDeliveryRequest;
-import com.sparta.logistics.infrastructure.feign.dto.CreateDeliveryRequest;
-import com.sparta.logistics.infrastructure.feign.dto.DeliveryResponse;
-import com.sparta.logistics.infrastructure.feign.dto.DeliveryStatusResponse;
+import com.sparta.logistics.infrastructure.feign.dto.delivery.CancelDeliveryRequest;
+import com.sparta.logistics.infrastructure.feign.dto.delivery.CreateDeliveryRequest;
+import com.sparta.logistics.infrastructure.feign.dto.delivery.DeliveryResponse;
+import com.sparta.logistics.infrastructure.feign.dto.delivery.DeliveryStatusResponse;
 import com.sparta.logistics.presentation.common.dto.response.GeneralResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;

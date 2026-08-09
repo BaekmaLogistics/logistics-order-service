@@ -1,4 +1,4 @@
-package com.sparta.logistics.infrastructure.feign.dto;
+package com.sparta.logistics.infrastructure.feign.dto.product;
 
 import java.time.Instant;
 import java.util.UUID;

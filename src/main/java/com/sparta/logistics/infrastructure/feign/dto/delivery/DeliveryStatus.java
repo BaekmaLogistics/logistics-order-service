@@ -1,4 +1,4 @@
-package com.sparta.logistics.infrastructure.feign.dto;
+package com.sparta.logistics.infrastructure.feign.dto.delivery;
 
 public enum DeliveryStatus {
     HUB_WAITING,

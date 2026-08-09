@@ -1,6 +1,6 @@
 package com.sparta.logistics.infrastructure.feign.client;
 
-import com.sparta.logistics.infrastructure.feign.dto.HubStockRequest;
+import com.sparta.logistics.infrastructure.feign.dto.hub.HubStockRequest;
 import com.sparta.logistics.presentation.common.dto.response.GeneralResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PatchMapping;
