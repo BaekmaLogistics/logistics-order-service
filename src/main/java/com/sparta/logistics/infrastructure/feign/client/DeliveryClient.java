@@ -1,8 +1,8 @@
 package com.sparta.logistics.infrastructure.feign.client;
 
 import com.sparta.logistics.infrastructure.feign.dto.CancelDeliveryRequest;
-import com.sparta.logistics.infrastructure.feign.dto.DeliveryResponse;
 import com.sparta.logistics.infrastructure.feign.dto.CreateDeliveryRequest;
+import com.sparta.logistics.infrastructure.feign.dto.DeliveryResponse;
 import com.sparta.logistics.infrastructure.feign.dto.DeliveryStatusResponse;
 import com.sparta.logistics.presentation.common.dto.response.GeneralResponse;
 import org.springframework.cloud.openfeign.FeignClient;
@@ -21,5 +21,10 @@ public interface DeliveryClient {
     GeneralResponse<Void> cancelDelivery(
             @PathVariable("deliveryId") UUID deliveryId,
             @RequestBody CancelDeliveryRequest request
+    );
+
+    @GetMapping("/internal/api/v1/deliveries/{deliveryId}/status")
+    GeneralResponse<DeliveryStatusResponse> getDeliveryStatus(
+            @PathVariable("deliveryId") UUID deliveryId
     );
 }

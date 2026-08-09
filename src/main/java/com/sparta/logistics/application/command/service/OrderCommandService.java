@@ -6,13 +6,16 @@ import com.sparta.logistics.application.command.dto.CreateOrderCommand;
 import com.sparta.logistics.application.command.dto.UpdateOrderCommand;
 import com.sparta.logistics.application.command.usecase.OrderCommandUseCase;
 import com.sparta.logistics.domain.entity.Order;
+import com.sparta.logistics.domain.model.OrderStatus;
 import com.sparta.logistics.domain.repository.OrderRepository;
 import com.sparta.logistics.infrastructure.feign.client.DeliveryClient;
 import com.sparta.logistics.infrastructure.feign.client.HubClient;
 import com.sparta.logistics.infrastructure.feign.client.ProductClient;
 import com.sparta.logistics.infrastructure.feign.dto.CancelDeliveryRequest;
 import com.sparta.logistics.infrastructure.feign.dto.CreateDeliveryRequest;
+import com.sparta.logistics.infrastructure.feign.dto.DeliveryStatusResponse;
 import com.sparta.logistics.infrastructure.feign.dto.DeliveryResponse;
+import com.sparta.logistics.infrastructure.feign.dto.DeliveryStatus;
 import com.sparta.logistics.infrastructure.feign.dto.HubStockRequest;
 import com.sparta.logistics.presentation.common.dto.response.ErrorResponseCode;
 import com.sparta.logistics.presentation.common.dto.response.GeneralResponse;
@@ -131,8 +134,41 @@ public class OrderCommandService implements OrderCommandUseCase {
     @Override
     public void changeOrderStatus(ChangeOrderStatusCommand command) {
         Order order = findOrder(command.orderId());
+
+        if (order.getDeliveryId() == null) {
+            throw new ApiException(ErrorResponseCode.ORDER_DELIVERY_NOT_ASSIGNED);
+        }
+
+        GeneralResponse<DeliveryStatusResponse> response;
+        try {
+            response = deliveryClient.getDeliveryStatus(order.getDeliveryId());
+        } catch (Exception e) {
+            throw new ApiException(ErrorResponseCode.ORDER_DELIVERY_STATUS_LOOKUP_FAILED);
+        }
+
+        validateDeliveryStatusForOrderStatus(response.data().status(), command.status());
+
         order.changeStatus(command.status());
 
         log.info("주문 상태가 변경되었습니다 : {} {}", command.orderId(), order.getStatus());
+    }
+
+    private void validateDeliveryStatusForOrderStatus(
+            DeliveryStatus deliveryStatus,
+            OrderStatus nextOrderStatus
+    ) {
+        boolean valid = switch (nextOrderStatus) {
+            case DELIVERY_REQUESTED -> deliveryStatus == DeliveryStatus.HUB_WAITING;
+            case DELIVERING -> deliveryStatus == DeliveryStatus.HUB_MOVING
+                    || deliveryStatus == DeliveryStatus.HUB_ARRIVED
+                    || deliveryStatus == DeliveryStatus.DELIVERING
+                    || deliveryStatus == DeliveryStatus.COMPANY_MOVING;
+            case COMPLETED -> deliveryStatus == DeliveryStatus.DELIVERED;
+            default -> true;
+        };
+
+        if (!valid) {
+            throw new ApiException(ErrorResponseCode.ORDER_CANNOT_CHANGE_STATUS);
+        }
     }
 }
