@@ -8,14 +8,7 @@ import com.sparta.logistics.application.command.usecase.OrderCommandUseCase;
 import com.sparta.logistics.domain.entity.Order;
 import com.sparta.logistics.domain.model.OrderStatus;
 import com.sparta.logistics.domain.repository.OrderRepository;
-import com.sparta.logistics.infrastructure.feign.client.DeliveryClient;
-import com.sparta.logistics.infrastructure.feign.client.HubClient;
-import com.sparta.logistics.infrastructure.feign.client.ProductClient;
-import com.sparta.logistics.infrastructure.feign.dto.delivery.CancelDeliveryRequest;
-import com.sparta.logistics.infrastructure.feign.dto.delivery.CreateDeliveryRequest;
-import com.sparta.logistics.infrastructure.feign.dto.delivery.DeliveryStatusResponse;
-import com.sparta.logistics.infrastructure.feign.dto.delivery.DeliveryResponse;
-import com.sparta.logistics.infrastructure.feign.dto.delivery.DeliveryStatus;
+import com.sparta.logistics.infrastructure.feign.dto.delivery.*;
 import com.sparta.logistics.infrastructure.feign.dto.hub.HubStockRequest;
 import com.sparta.logistics.presentation.common.dto.response.ErrorResponseCode;
 import com.sparta.logistics.presentation.common.dto.response.GeneralResponse;
@@ -33,14 +26,12 @@ import java.util.UUID;
 @Transactional
 public class OrderCommandService implements OrderCommandUseCase {
     private final OrderRepository orderRepository;
-    private final DeliveryClient deliveryClient;
-    private final ProductClient productClient;
-    private final HubClient hubClient;
+    private final OrderExternalService orderExternalService;
 
     @Override
     @Transactional(noRollbackFor = ApiException.class)
     public UUID createOrder(CreateOrderCommand command) {
-        productClient.getProduct(command.productId());
+        orderExternalService.getProduct(command.productId());
 
         Order order = Order.create(
                 command.departureHubId(),
@@ -54,16 +45,25 @@ public class OrderCommandService implements OrderCommandUseCase {
         Order savedOrder = orderRepository.save(order);
 
         HubStockRequest stockRequest = HubStockRequest.from(savedOrder);
-        hubClient.decreaseStock(stockRequest);
+
+        try {
+            orderExternalService.decreaseStock(stockRequest);
+        } catch (Exception e) {
+            log.error("Stock decrease failed. request={}", stockRequest, e);
+
+            savedOrder.fail();
+            throw new ApiException(ErrorResponseCode.ORDER_STOCK_DECREASE_FAILED);
+        }
 
         try {
             GeneralResponse<DeliveryResponse> deliveryResponse =
-                    deliveryClient.createDelivery(CreateDeliveryRequest.from(savedOrder.getId(), command));
+                    orderExternalService.createDelivery(CreateDeliveryRequest.from(savedOrder.getId(), command));
+
             savedOrder.assignDelivery(deliveryResponse.data().id());
         } catch (Exception e) {
             savedOrder.fail();
             try {
-                hubClient.increaseStock(stockRequest);
+                orderExternalService.increaseStock(stockRequest);
             } catch (Exception ex) {
                 throw new ApiException(ErrorResponseCode.ORDER_STOCK_RESTORE_FAILED);
             }
@@ -102,7 +102,7 @@ public class OrderCommandService implements OrderCommandUseCase {
 
         if (order.getDeliveryId() != null) {
             try {
-                deliveryClient.cancelDelivery(
+                orderExternalService.cancelDelivery(
                         order.getDeliveryId(),
                         CancelDeliveryRequest.from(command)
                 );
@@ -112,7 +112,7 @@ public class OrderCommandService implements OrderCommandUseCase {
         }
 
         try {
-            hubClient.increaseStock(HubStockRequest.from(order));
+            orderExternalService.increaseStock(HubStockRequest.from(order));
         } catch (Exception e) {
             throw new ApiException(ErrorResponseCode.ORDER_STOCK_RESTORE_FAILED);
         }
@@ -141,7 +141,7 @@ public class OrderCommandService implements OrderCommandUseCase {
 
         GeneralResponse<DeliveryStatusResponse> response;
         try {
-            response = deliveryClient.getDeliveryStatus(order.getDeliveryId());
+            response = orderExternalService.getDeliveryStatus(order.getDeliveryId());
         } catch (Exception e) {
             throw new ApiException(ErrorResponseCode.ORDER_DELIVERY_STATUS_LOOKUP_FAILED);
         }
