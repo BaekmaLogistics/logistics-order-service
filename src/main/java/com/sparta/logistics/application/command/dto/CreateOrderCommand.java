@@ -8,6 +8,11 @@ public record CreateOrderCommand(
         UUID productId,
         Integer quantity,
         String requestMessage,
-        Instant dueDate
+        Instant dueDate,
+        UUID departureHubId,
+        UUID destinationHubId,
+        String deliveryAddress,
+        String receiverName,
+        String receiverSlackId
 ) {
 }
