@@ -53,7 +53,7 @@ public class OrderCommandService implements OrderCommandUseCase {
 
         Order savedOrder = orderRepository.save(order);
 
-        HubStockRequest stockRequest = HubStockRequest.from(command);
+        HubStockRequest stockRequest = HubStockRequest.from(savedOrder);
         hubClient.decreaseStock(stockRequest);
 
         try {
