@@ -27,7 +27,8 @@ public enum ErrorResponseCode implements ApiResponseCode {
     ORDER_STOCK_RESTORE_FAILED(HttpStatus.BAD_GATEWAY, "ORDER_0012", "재고 복구 요청에 실패했습니다."),
     ORDER_DELIVERY_STATUS_LOOKUP_FAILED(HttpStatus.BAD_GATEWAY, "ORDER_0013", "배송 상태 조회에 실패했습니다."),
     ORDER_PRODUCT_LOOKUP_FAILED(HttpStatus.BAD_GATEWAY, "ORDER_0014", "상품 조회 요청에 실패했습니다."),
-    ORDER_STOCK_DECREASE_FAILED(HttpStatus.BAD_GATEWAY, "ORDER_0015", "재고 차감 요청에 실패했습니다.");
+    ORDER_STOCK_DECREASE_FAILED(HttpStatus.BAD_GATEWAY, "ORDER_0015", "재고 차감 요청에 실패했습니다."),
+    ORDER_OUTBOX_SAVE_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "ORDER_0016", "주문 이벤트 저장에 실패했습니다.");
 
     private final HttpStatus status;
     private final String errorCode;
