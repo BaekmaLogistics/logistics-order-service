@@ -27,6 +27,7 @@ import java.util.UUID;
 public class OrderCommandService implements OrderCommandUseCase {
     private final OrderRepository orderRepository;
     private final OrderExternalService orderExternalService;
+    private final OrderOutboxService orderOutboxService;
 
     @Override
     @Transactional(noRollbackFor = ApiException.class)
@@ -70,6 +71,8 @@ public class OrderCommandService implements OrderCommandUseCase {
             }
             throw new ApiException(ErrorResponseCode.ORDER_DELIVERY_CREATE_FAILED);
         }
+
+        orderOutboxService.saveOrderCreatedEvent(savedOrder);
 
         log.info("Order created : {}", savedOrder.getId());
         log.info("Delivery created : {}", savedOrder.getDeliveryId());
