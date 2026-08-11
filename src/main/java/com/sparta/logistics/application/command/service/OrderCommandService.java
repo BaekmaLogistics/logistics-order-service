@@ -27,6 +27,7 @@ import java.util.UUID;
 public class OrderCommandService implements OrderCommandUseCase {
     private final OrderRepository orderRepository;
     private final OrderExternalService orderExternalService;
+    private final OrderOutboxService orderOutboxService;
 
     @Override
     @Transactional(noRollbackFor = ApiException.class)
@@ -70,6 +71,8 @@ public class OrderCommandService implements OrderCommandUseCase {
             }
             throw new ApiException(ErrorResponseCode.ORDER_DELIVERY_CREATE_FAILED);
         }
+
+        orderOutboxService.saveOrderCreatedEvent(savedOrder);
 
         log.info("Order created : {}", savedOrder.getId());
         log.info("Delivery created : {}", savedOrder.getDeliveryId());
@@ -119,6 +122,7 @@ public class OrderCommandService implements OrderCommandUseCase {
         }
 
         order.cancel(command.canceledReason());
+        orderOutboxService.saveOrderCanceledEvent(order);
 
         log.info("Order canceled success :{} {}", command.orderId(), order.getStatus());
     }
@@ -150,6 +154,10 @@ public class OrderCommandService implements OrderCommandUseCase {
         validateDeliveryStatusForOrderStatus(response.data().status(), command.status());
 
         order.changeStatus(command.status());
+
+        if (command.status() == OrderStatus.COMPLETED) {
+            orderOutboxService.saveOrderCompletedEvent(order);
+        }
 
         log.info("주문 상태가 변경되었습니다 : {} {}", command.orderId(), order.getStatus());
     }
