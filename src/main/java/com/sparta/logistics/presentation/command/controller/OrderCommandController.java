@@ -24,9 +24,10 @@ public class OrderCommandController {
 
     @PostMapping
     public ResponseEntity<GeneralResponse<UUID>> createOrder(
+            @RequestHeader(name = HeaderConstants.USER_ID) UUID userId,
             @Valid @RequestBody CreateOrderRequest request
     ) {
-        UUID orderId = orderCommandUseCase.createOrder(request.toCommand());
+        UUID orderId = orderCommandUseCase.createOrder(request.toCommand(userId));
 
         return GeneralResponse.toResponseEntity(GeneralResponseCode.CREATED, orderId);
     }

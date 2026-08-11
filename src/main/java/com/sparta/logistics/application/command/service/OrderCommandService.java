@@ -34,6 +34,7 @@ public class OrderCommandService implements OrderCommandUseCase {
         orderExternalService.getProduct(command.productId());
 
         Order order = Order.create(
+                command.ordererUserId(),
                 command.departureHubId(),
                 command.receiverCompanyId(),
                 command.productId(),

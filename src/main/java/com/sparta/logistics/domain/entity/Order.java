@@ -18,6 +18,9 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Order extends BaseUpdatableEntity {
 
+    @Column(name = "orderer_user_id", nullable = false, columnDefinition = "UUID")
+    private UUID ordererUserId;
+
     @Column(name = "departure_hub_id", nullable = false, columnDefinition = "UUID")
     private UUID departureHubId;
 
@@ -50,6 +53,7 @@ public class Order extends BaseUpdatableEntity {
     private String canceledReason;
 
     public static Order create(
+            UUID ordererUserId,
             UUID departureHubId,
             UUID receiverCompanyId,
             UUID productId,
@@ -57,10 +61,12 @@ public class Order extends BaseUpdatableEntity {
             String requestMessage,
             Instant dueDate
     ) {
+        validateOrdererUserID(ordererUserId);
         validateQuantity(quantity);
         validateDepartureHubId(departureHubId);
 
         Order order = new Order();
+        order.ordererUserId = ordererUserId;
         order.departureHubId = departureHubId;
         order.receiverCompanyId = receiverCompanyId;
         order.productId = productId;
@@ -72,6 +78,18 @@ public class Order extends BaseUpdatableEntity {
         return order;
     }
 
+    private static void validateOrdererUserID(UUID ordererUserId) {
+        if (ordererUserId == null) {
+            throw new ApiException(ErrorResponseCode.INVALID_REQUEST);
+        }
+    }
+
+    private static void validateQuantity(Integer quantity) {
+        if (quantity == null || quantity < 1) {
+            throw new ApiException(ErrorResponseCode.ORDER_INVALID_QUANTITY);
+        }
+    }
+
     private static void validateDepartureHubId(UUID departureHubId) {
         if (departureHubId == null) {
             throw new ApiException(ErrorResponseCode.INVALID_REQUEST);
@@ -81,13 +99,6 @@ public class Order extends BaseUpdatableEntity {
     public void fail() {
         this.status = OrderStatus.FAILED;
     }
-
-    private static void validateQuantity(Integer quantity) {
-        if (quantity == null || quantity < 1) {
-            throw new ApiException(ErrorResponseCode.ORDER_INVALID_QUANTITY);
-        }
-    }
-
 
     public void update(
             Integer quantity,

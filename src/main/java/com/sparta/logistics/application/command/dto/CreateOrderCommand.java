@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record CreateOrderCommand(
+        UUID ordererUserId,
         UUID receiverCompanyId,
         UUID productId,
         Integer quantity,
