@@ -58,6 +58,24 @@ public class OrderOutboxService {
                 envelope
         );
     }
+
+    public void saveOrderCompletedEvent(Order order) {
+        OrderCompletedPayload payload = OrderCompletedPayload.from(order);
+
+        EventEnvelope<OrderCompletedPayload> envelope = EventEnvelope.of(
+                ORDER_COMPLETED_EVENT,
+                payload,
+                order.getOrdererUserId()
+        );
+
+        save(
+                order.getId(),
+                ORDER_COMPLETED_EVENT,
+                ORDER_COMPLETED_ROUTING_KEY,
+                envelope
+        );
+    }
+
     private void save(
             UUID orderId,
             String eventType,

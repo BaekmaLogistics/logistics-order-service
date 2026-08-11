@@ -155,6 +155,10 @@ public class OrderCommandService implements OrderCommandUseCase {
 
         order.changeStatus(command.status());
 
+        if (command.status() == OrderStatus.COMPLETED) {
+            orderOutboxService.saveOrderCompletedEvent(order);
+        }
+
         log.info("주문 상태가 변경되었습니다 : {} {}", command.orderId(), order.getStatus());
     }
 
