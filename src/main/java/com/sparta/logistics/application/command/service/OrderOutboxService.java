@@ -42,6 +42,22 @@ public class OrderOutboxService {
         );
     }
 
+    public void saveOrderCanceledEvent(Order order) {
+        OrderCanceledPayload payload = OrderCanceledPayload.from(order);
+
+        EventEnvelope<OrderCanceledPayload> envelope = EventEnvelope.of(
+                ORDER_CANCELED_EVENT,
+                payload,
+                order.getOrdererUserId()
+        );
+
+        save(
+                order.getId(),
+                ORDER_CANCELED_EVENT,
+                ORDER_CANCELED_ROUTING_KEY,
+                envelope
+        );
+    }
     private void save(
             UUID orderId,
             String eventType,

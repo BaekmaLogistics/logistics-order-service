@@ -122,6 +122,7 @@ public class OrderCommandService implements OrderCommandUseCase {
         }
 
         order.cancel(command.canceledReason());
+        orderOutboxService.saveOrderCanceledEvent(order);
 
         log.info("Order canceled success :{} {}", command.orderId(), order.getStatus());
     }
