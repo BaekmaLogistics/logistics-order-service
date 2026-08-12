@@ -11,7 +11,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @RequiredArgsConstructor
 public class RabbitConfig {
-
     private final ConnectionFactory connectionFactory;
 
     @Bean

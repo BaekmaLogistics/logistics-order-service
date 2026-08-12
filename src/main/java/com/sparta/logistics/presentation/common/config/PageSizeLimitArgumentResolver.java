@@ -15,10 +15,10 @@ import java.util.Set;
 @Component
 public class PageSizeLimitArgumentResolver implements HandlerMethodArgumentResolver {
 
+    private final PageableHandlerMethodArgumentResolver delegate = new PageableHandlerMethodArgumentResolver();
+
     private static final Set<Integer> ALLOWED_SIZES = Set.of(10, 30, 50);
     private static final int DEFAULT_SIZE = 10;
-
-    private final PageableHandlerMethodArgumentResolver delegate = new PageableHandlerMethodArgumentResolver();
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {

@@ -8,7 +8,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import static com.sparta.logistics.infrastructure.messaging.event.order.OrderEventConstants.*;
+import static com.sparta.logistics.infrastructure.messaging.event.order.OrderEventConstants.DELIVERY_CANCELED_ROUTING_KEY;
+import static com.sparta.logistics.infrastructure.messaging.event.order.OrderEventConstants.DELIVERY_CANCEL_FAILED_ROUTING_KEY;
+import static com.sparta.logistics.infrastructure.messaging.event.order.OrderEventConstants.DELIVERY_CREATED_ROUTING_KEY;
+import static com.sparta.logistics.infrastructure.messaging.event.order.OrderEventConstants.DELIVERY_CREATE_FAILED_ROUTING_KEY;
+import static com.sparta.logistics.infrastructure.messaging.event.order.OrderEventConstants.INVENTORY_DEDUCTED_ROUTING_KEY;
+import static com.sparta.logistics.infrastructure.messaging.event.order.OrderEventConstants.INVENTORY_DEDUCT_FAILED_ROUTING_KEY;
+import static com.sparta.logistics.infrastructure.messaging.event.order.OrderEventConstants.INVENTORY_RESTORED_ROUTING_KEY;
+import static com.sparta.logistics.infrastructure.messaging.event.order.OrderEventConstants.INVENTORY_RESTORE_FAILED_ROUTING_KEY;
 
 @Configuration
 public class QueueConfig {
@@ -21,27 +28,133 @@ public class QueueConfig {
     private String queueHub;
     @Value("${message.queue.notification}")
     private String queueNotification;
+    @Value("${message.queue.company}")
+    private String queueCompany;
     @Value("${message.queue.order:order.queue}")
     private String queueOrder;
 
+    @Value("${message.binding-key.notification.inventory-low}")
+    private String keyNotificationInventoryLow;
+    @Value("${message.binding-key.notification.order-created}")
+    private String keyNotificationOrderCreated;
+    @Value("${message.binding-key.notification.order-canceled}")
+    private String keyNotificationOrderCanceled;
+    @Value("${message.binding-key.notification.order-completed}")
+    private String keyNotificationOrderCompleted;
+    @Value("${message.binding-key.hub.route-changed}")
+    private String keyHubRouteChanged;
+    @Value("${message.binding-key.company.hub-deleted}")
+    private String keyCompanyHubDeleted;
+
     @Bean
-    public TopicExchange exchange() { return new TopicExchange(exchange); }
+    public TopicExchange exchange() {
+        return new TopicExchange(exchange);
+    }
 
-    @Bean public Queue queueDelivery() { return new Queue(queueDelivery); }
-    @Bean public Queue queueHub() { return new Queue(queueHub); }
-    @Bean public Queue queueNotification() { return new Queue(queueNotification); }
-    @Bean public Queue queueOrder() { return new Queue(queueOrder); }
+    @Bean
+    public Queue queueDelivery() {
+        return new Queue(queueDelivery);
+    }
 
-    @Bean public Binding bindingDelivery() { return BindingBuilder.bind(queueDelivery()).to(exchange()).with(queueDelivery); }
-    @Bean public Binding bindingHub() { return BindingBuilder.bind(queueHub()).to(exchange()).with(queueHub); }
-    @Bean public Binding bindingNotification() { return BindingBuilder.bind(queueNotification()).to(exchange()).with(queueNotification); }
-    @Bean public Binding bindingOrderInventoryDeducted() { return BindingBuilder.bind(queueOrder()).to(exchange()).with(INVENTORY_DEDUCTED_ROUTING_KEY); }
-    @Bean public Binding bindingOrderInventoryDeductFailed() { return BindingBuilder.bind(queueOrder()).to(exchange()).with(INVENTORY_DEDUCT_FAILED_ROUTING_KEY); }
-    @Bean public Binding bindingOrderInventoryRestored() { return BindingBuilder.bind(queueOrder()).to(exchange()).with(INVENTORY_RESTORED_ROUTING_KEY); }
-    @Bean public Binding bindingOrderInventoryRestoreFailed() { return BindingBuilder.bind(queueOrder()).to(exchange()).with(INVENTORY_RESTORE_FAILED_ROUTING_KEY); }
-    @Bean public Binding bindingOrderDeliveryCreated() { return BindingBuilder.bind(queueOrder()).to(exchange()).with(DELIVERY_CREATED_ROUTING_KEY); }
-    @Bean public Binding bindingOrderDeliveryCreateFailed() { return BindingBuilder.bind(queueOrder()).to(exchange()).with(DELIVERY_CREATE_FAILED_ROUTING_KEY); }
-    @Bean public Binding bindingOrderDeliveryCanceled() { return BindingBuilder.bind(queueOrder()).to(exchange()).with(DELIVERY_CANCELED_ROUTING_KEY); }
-    @Bean public Binding bindingOrderDeliveryCancelFailed() { return BindingBuilder.bind(queueOrder()).to(exchange()).with(DELIVERY_CANCEL_FAILED_ROUTING_KEY); }
+    @Bean
+    public Queue queueHub() {
+        return new Queue(queueHub);
+    }
 
+    @Bean
+    public Queue queueNotification() {
+        return new Queue(queueNotification);
+    }
+
+    @Bean
+    public Queue queueCompany() {
+        return new Queue(queueCompany);
+    }
+
+    @Bean
+    public Queue queueOrder() {
+        return new Queue(queueOrder);
+    }
+
+    @Bean
+    public Binding bindingNotificationInventoryLow() {
+        return BindingBuilder.bind(queueNotification())
+                .to(exchange())
+                .with(keyNotificationInventoryLow);
+    }
+
+    @Bean
+    public Binding bindingNotificationOrderCreated() {
+        return BindingBuilder.bind(queueNotification())
+                .to(exchange())
+                .with(keyNotificationOrderCreated);
+    }
+
+    @Bean
+    public Binding bindingNotificationOrderCanceled() {
+        return BindingBuilder.bind(queueNotification())
+                .to(exchange())
+                .with(keyNotificationOrderCanceled);
+    }
+
+    @Bean
+    public Binding bindingNotificationOrderCompleted() {
+        return BindingBuilder.bind(queueNotification())
+                .to(exchange())
+                .with(keyNotificationOrderCompleted);
+    }
+
+    @Bean
+    public Binding bindingHubRouteChanged() {
+        return BindingBuilder.bind(queueHub())
+                .to(exchange())
+                .with(keyHubRouteChanged);
+    }
+
+    @Bean
+    public Binding bindingCompanyHubDeleted() {
+        return BindingBuilder.bind(queueCompany())
+                .to(exchange())
+                .with(keyCompanyHubDeleted);
+    }
+
+    @Bean
+    public Binding bindingOrderInventoryDeducted() {
+        return BindingBuilder.bind(queueOrder()).to(exchange()).with(INVENTORY_DEDUCTED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding bindingOrderInventoryDeductFailed() {
+        return BindingBuilder.bind(queueOrder()).to(exchange()).with(INVENTORY_DEDUCT_FAILED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding bindingOrderInventoryRestored() {
+        return BindingBuilder.bind(queueOrder()).to(exchange()).with(INVENTORY_RESTORED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding bindingOrderInventoryRestoreFailed() {
+        return BindingBuilder.bind(queueOrder()).to(exchange()).with(INVENTORY_RESTORE_FAILED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding bindingOrderDeliveryCreated() {
+        return BindingBuilder.bind(queueOrder()).to(exchange()).with(DELIVERY_CREATED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding bindingOrderDeliveryCreateFailed() {
+        return BindingBuilder.bind(queueOrder()).to(exchange()).with(DELIVERY_CREATE_FAILED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding bindingOrderDeliveryCanceled() {
+        return BindingBuilder.bind(queueOrder()).to(exchange()).with(DELIVERY_CANCELED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding bindingOrderDeliveryCancelFailed() {
+        return BindingBuilder.bind(queueOrder()).to(exchange()).with(DELIVERY_CANCEL_FAILED_ROUTING_KEY);
+    }
 }

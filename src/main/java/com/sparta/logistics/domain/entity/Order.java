@@ -2,8 +2,8 @@ package com.sparta.logistics.domain.entity;
 
 import com.sparta.logistics.domain.model.OrderStatus;
 import com.sparta.logistics.infrastructure.persistence.jpa.entity.BaseUpdatableEntity;
-import com.sparta.logistics.presentation.common.dto.response.ErrorResponseCode;
-import com.sparta.logistics.presentation.common.exception.ApiException;
+import com.sparta.logistics.common.code.ErrorResponseCode;
+import com.sparta.logistics.common.exception.ApiException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

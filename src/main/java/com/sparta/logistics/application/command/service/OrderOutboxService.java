@@ -9,8 +9,8 @@ import com.sparta.logistics.infrastructure.messaging.envelope.EventEnvelope;
 import com.sparta.logistics.infrastructure.messaging.event.order.OrderCanceledPayload;
 import com.sparta.logistics.infrastructure.messaging.event.order.OrderCompletedPayload;
 import com.sparta.logistics.infrastructure.messaging.event.order.OrderCreatedPayload;
-import com.sparta.logistics.presentation.common.dto.response.ErrorResponseCode;
-import com.sparta.logistics.presentation.common.exception.ApiException;
+import com.sparta.logistics.common.code.ErrorResponseCode;
+import com.sparta.logistics.common.exception.ApiException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -1,11 +1,10 @@
-server:
-  port: 8087
-
 spring:
   application:
     name: logistics-order-service
   #  profiles:
-  #    active: dev
+  #    active: local
+  config:
+    import: "optional:configserver:"
   datasource:
     url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
     username: ${DB_USER}
@@ -41,6 +40,7 @@ spring:
             connect-timeout: 5000
             read-timeout: 3000
             logger-level: basic
+
 services:
   delivery:
     url: ${DELIVERY_SERVICE_URL:http://localhost:8083}
@@ -56,6 +56,17 @@ message:
     delivery: delivery.queue
     hub: hub.queue
     notification: notification.queue
+    company: company.queue
+  binding-key:
+    notification:
+      inventory-low: hub.inventory.low
+      order-created: order.created
+      order-canceled: order.canceled
+      order-completed: order.completed
+    hub:
+      route-changed: hub.route.changed
+    company:
+      hub-deleted: hub.deleted
   outbox:
     publish-delay-ms: 5000
 

@@ -10,7 +10,6 @@ import java.util.List;
 @Configuration
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
-
     private final PageSizeLimitArgumentResolver pageSizeLimitArgumentResolver;
 
     @Override
