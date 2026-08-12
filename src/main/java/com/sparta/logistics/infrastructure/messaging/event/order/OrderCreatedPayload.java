@@ -6,22 +6,32 @@ import java.time.Instant;
 import java.util.UUID;
 
 public record OrderCreatedPayload(
-        UUID orderId,
-        UUID ordererUserId,
+        UUID id,
+        UUID departureHubId,
         UUID receiverCompanyId,
         UUID productId,
-        Integer quantity,
+        int quantity,
         UUID deliveryId,
+        String orderStatus,
+        String requestMessage,
+        Instant dueDate,
+        Instant canceledAt,
+        String canceledReason,
         Instant occurredAt
 ) {
     public static OrderCreatedPayload from(Order order) {
         return new OrderCreatedPayload(
                 order.getId(),
-                order.getOrdererUserId(),
+                order.getDepartureHubId(),
                 order.getReceiverCompanyId(),
                 order.getProductId(),
                 order.getQuantity(),
                 order.getDeliveryId(),
+                order.getStatus().name(),
+                order.getRequestMessage(),
+                order.getDueDate(),
+                order.getCanceledAt(),
+                order.getCanceledReason(),
                 Instant.now()
         );
     }

@@ -86,8 +86,9 @@ class OrderOutboxServiceJpaTest {
         assertThat(event.getRetryCount()).isZero();
         assertThat(event.getPayload())
                 .contains("\"eventType\":\"OrderCreatedEvent\"")
-                .contains("\"orderId\":\"" + orderId + "\"")
-                .contains("\"deliveryId\":\"" + deliveryId + "\"");
+                .contains("\"id\":\"" + orderId + "\"")
+                .contains("\"deliveryId\":\"" + deliveryId + "\"")
+                .contains("\"orderStatus\":\"DELIVERY_REQUESTED\"");
     }
 
     private Order createOrder(UUID orderId, UUID deliveryId) {
