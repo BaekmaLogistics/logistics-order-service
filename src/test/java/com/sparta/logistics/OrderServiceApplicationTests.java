@@ -2,6 +2,8 @@ package com.sparta.logistics;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest(properties = {
         "spring.cloud.config.enabled=false",
@@ -16,6 +18,9 @@ import org.springframework.boot.test.context.SpringBootTest;
                 + "org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration"
 })
 class OrderServiceApplicationTests {
+
+    @MockitoBean
+    private JpaMetamodelMappingContext jpaMetamodelMappingContext;
 
     @Test
     void contextLoads() {
