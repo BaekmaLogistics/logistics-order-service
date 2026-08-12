@@ -52,9 +52,12 @@ services:
 message:
   exchange: baekma.exchange # Producer만 적용
   queue:
+    order: order.queue
     delivery: delivery.queue
     hub: hub.queue
     notification: notification.queue
+  outbox:
+    publish-delay-ms: 5000
 
 management:
   tracing:
