@@ -66,4 +66,30 @@ public class OutboxEvent extends BaseEntity {
         outboxEvent.retryCount = 0;
         return outboxEvent;
     }
+
+    private static final int MAX_ERROR_MESSAGE_LENGTH = 255;
+
+    public void markPublished() {
+        this.status = OutboxStatus.PUBLISHED;
+        this.publishedAt = Instant.now();
+        this.errorMessage = null;
+    }
+
+    public void markPublishFailed(String errorMessage, int maxRetryCount) {
+        this.retryCount++;
+        this.errorMessage = truncate(errorMessage);
+
+        if (this.retryCount >= maxRetryCount) {
+            this.status = OutboxStatus.FAILED;
+        }
+    }
+
+    private String truncate(String message) {
+        if (message == null || message.length() <= MAX_ERROR_MESSAGE_LENGTH) {
+            return message;
+
+        } else {
+            return message.substring(0, MAX_ERROR_MESSAGE_LENGTH);
+        }
+    }
 }
