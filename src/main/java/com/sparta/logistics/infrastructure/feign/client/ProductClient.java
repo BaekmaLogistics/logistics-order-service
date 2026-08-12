@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.UUID;
 
-@FeignClient(name = "company-product-service", url = "${services.company-product.url}")
+@FeignClient(name = "company-product-service")
 public interface ProductClient {
 
     @GetMapping("/internal/api/v1/products/{productId}")

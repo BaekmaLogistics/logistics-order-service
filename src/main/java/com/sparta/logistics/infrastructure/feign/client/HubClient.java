@@ -6,7 +6,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "hub-service", url = "${services.hub.url}")
+@FeignClient(name = "hub-service")
 public interface HubClient {
 
     @PatchMapping("/internal/api/v1/hub-inventories/decrease")

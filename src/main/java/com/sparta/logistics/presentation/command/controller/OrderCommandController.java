@@ -7,7 +7,7 @@ import com.sparta.logistics.presentation.command.dto.CreateOrderRequest;
 import com.sparta.logistics.presentation.command.dto.UpdateOrderRequest;
 import com.sparta.logistics.presentation.common.constant.HeaderConstants;
 import com.sparta.logistics.presentation.common.dto.response.GeneralResponse;
-import com.sparta.logistics.presentation.common.dto.response.GeneralResponseCode;
+import com.sparta.logistics.common.code.GeneralResponseCode;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

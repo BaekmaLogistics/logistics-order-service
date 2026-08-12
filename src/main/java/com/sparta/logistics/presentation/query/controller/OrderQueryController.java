@@ -7,7 +7,7 @@ import com.sparta.logistics.application.query.dto.OrderStatsResponse;
 import com.sparta.logistics.application.query.usecase.OrderQueryUseCase;
 import com.sparta.logistics.domain.model.OrderStatus;
 import com.sparta.logistics.presentation.common.dto.response.GeneralResponse;
-import com.sparta.logistics.presentation.common.dto.response.GeneralResponseCode;
+import com.sparta.logistics.common.code.GeneralResponseCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
