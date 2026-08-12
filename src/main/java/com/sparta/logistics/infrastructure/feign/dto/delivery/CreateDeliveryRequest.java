@@ -6,6 +6,7 @@ import java.util.UUID;
 
 public record CreateDeliveryRequest(
         UUID orderId,
+        UUID companyId,
         UUID departureHubId,
         UUID destinationHubId,
         String deliveryAddress,
@@ -18,6 +19,7 @@ public record CreateDeliveryRequest(
     ) {
         return new CreateDeliveryRequest(
                 orderId,
+                command.receiverCompanyId(),
                 command.departureHubId(),
                 command.destinationHubId(),
                 command.deliveryAddress(),

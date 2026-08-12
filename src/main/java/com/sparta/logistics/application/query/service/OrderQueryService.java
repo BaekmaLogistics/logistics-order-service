@@ -1,5 +1,6 @@
 package com.sparta.logistics.application.query.service;
 
+import com.sparta.logistics.application.query.dto.InternalOrderResponse;
 import com.sparta.logistics.application.query.dto.OrderDetailResponse;
 import com.sparta.logistics.application.query.dto.OrderSearchCondition;
 import com.sparta.logistics.application.query.dto.OrderSearchResponse;
@@ -118,6 +119,14 @@ public class OrderQueryService implements OrderQueryUseCase {
                 receiverCompanyCount,
                 dailyCounts
         );
+    }
+
+    @Override
+    public InternalOrderResponse getInternalOrder(UUID orderId) {
+        Order order = orderRepository.findByIdAndDeletedAtIsNull(orderId)
+                .orElseThrow(() -> new ApiException(ErrorResponseCode.ORDER_NOT_FOUND));
+
+        return InternalOrderResponse.from(order);
     }
 
     private Specification<Order> buildSpecification(OrderSearchCondition condition) {
