@@ -4,6 +4,7 @@ import com.sparta.logistics.application.query.dto.InternalOrderResponse;
 import com.sparta.logistics.application.query.usecase.OrderQueryUseCase;
 import com.sparta.logistics.common.code.GeneralResponseCode;
 import com.sparta.logistics.presentation.common.dto.response.GeneralResponse;
+import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +16,7 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
+@Hidden
 @RequestMapping("/internal/api/v1/orders")
 public class InternalOrderQueryController {
 

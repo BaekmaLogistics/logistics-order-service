@@ -8,6 +8,8 @@ import com.sparta.logistics.application.query.usecase.OrderQueryUseCase;
 import com.sparta.logistics.domain.model.OrderStatus;
 import com.sparta.logistics.presentation.common.dto.response.GeneralResponse;
 import com.sparta.logistics.common.code.GeneralResponseCode;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,11 +24,13 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Order Query", description = "주문 조회, 검색, 통계 API")
 @RequestMapping("/api/v1/orders")
 public class OrderQueryController {
 
     private final OrderQueryUseCase orderQueryUseCase;
 
+    @Operation(summary = "주문 상세 조회", description = "주문 ID로 주문 상세 정보를 조회합니다.")
     @GetMapping("/{orderId}")
     public ResponseEntity<GeneralResponse<OrderDetailResponse>> getOrderDetail(
             @PathVariable UUID orderId
@@ -36,6 +40,7 @@ public class OrderQueryController {
         return GeneralResponse.toResponseEntity(GeneralResponseCode.OK, response);
     }
 
+    @Operation(summary = "주문 목록 검색", description = "수령 업체, 상품, 배송, 상태, 기간 조건으로 주문 목록을 검색합니다.")
     @GetMapping
     public ResponseEntity<GeneralResponse<Page<OrderSearchResponse>>> searchOrders(
             @RequestParam(required = false) UUID receiverCompanyId,
@@ -60,6 +65,7 @@ public class OrderQueryController {
         return GeneralResponse.toResponseEntity(GeneralResponseCode.OK, response);
     }
 
+    @Operation(summary = "주문 통계 조회", description = "조건에 따른 주문 상태별, 업체별, 일자별 통계를 조회합니다.")
     @GetMapping("/stats")
     public ResponseEntity<GeneralResponse<OrderStatsResponse >> getOrderStats(
             @RequestParam(required = false) UUID receiverCompanyId,
