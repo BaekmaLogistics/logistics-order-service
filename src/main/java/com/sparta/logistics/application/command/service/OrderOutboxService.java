@@ -2,6 +2,9 @@ package com.sparta.logistics.application.command.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sparta.logistics.application.command.dto.CreateOrderCommand;
+import com.sparta.logistics.common.code.ErrorResponseCode;
+import com.sparta.logistics.common.exception.ApiException;
 import com.sparta.logistics.domain.entity.Order;
 import com.sparta.logistics.domain.entity.OutboxEvent;
 import com.sparta.logistics.domain.repository.OutboxEventRepository;
@@ -9,8 +12,6 @@ import com.sparta.logistics.infrastructure.messaging.envelope.EventEnvelope;
 import com.sparta.logistics.infrastructure.messaging.event.order.OrderCanceledPayload;
 import com.sparta.logistics.infrastructure.messaging.event.order.OrderCompletedPayload;
 import com.sparta.logistics.infrastructure.messaging.event.order.OrderCreatedPayload;
-import com.sparta.logistics.common.code.ErrorResponseCode;
-import com.sparta.logistics.common.exception.ApiException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -25,8 +26,8 @@ public class OrderOutboxService {
     private final OutboxEventRepository outboxEventRepository;
     private final ObjectMapper objectMapper;
 
-    public void saveOrderCreatedEvent(Order order) {
-        OrderCreatedPayload payload = OrderCreatedPayload.from(order);
+    public void saveOrderCreatedEvent(Order order, CreateOrderCommand command) {
+        OrderCreatedPayload payload = OrderCreatedPayload.from(order, command);
 
         EventEnvelope<OrderCreatedPayload> envelope = EventEnvelope.of(
                 ORDER_CREATED_EVENT,

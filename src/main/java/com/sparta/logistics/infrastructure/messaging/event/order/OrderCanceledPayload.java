@@ -9,6 +9,9 @@ public record OrderCanceledPayload(
         UUID orderId,
         UUID ordererUserId,
         UUID deliveryId,
+        UUID departureHubId,
+        UUID productId,
+        int quantity,
         String canceledReason,
         Instant occurredAt
 ) {
@@ -17,6 +20,9 @@ public record OrderCanceledPayload(
                 order.getId(),
                 order.getOrdererUserId(),
                 order.getDeliveryId(),
+                order.getDepartureHubId(),
+                order.getProductId(),
+                order.getQuantity(),
                 order.getCanceledReason(),
                 order.getCanceledAt()
         );
