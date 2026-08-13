@@ -2,6 +2,7 @@ package com.sparta.logistics.application.command.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.sparta.logistics.application.command.dto.CreateOrderCommand;
 import com.sparta.logistics.domain.entity.Order;
 import com.sparta.logistics.domain.entity.OutboxEvent;
 import com.sparta.logistics.domain.model.OutboxStatus;
@@ -70,8 +71,9 @@ class OrderOutboxServiceJpaTest {
         UUID orderId = UUID.randomUUID();
         UUID deliveryId = UUID.randomUUID();
         Order order = createOrder(orderId, deliveryId);
+        CreateOrderCommand command = createOrderCommand(order);
 
-        orderOutboxService.saveOrderCreatedEvent(order);
+        orderOutboxService.saveOrderCreatedEvent(order, command);
 
         List<OutboxEvent> events = outboxEventRepository.findAll();
         assertThat(events).hasSize(1);
@@ -88,7 +90,27 @@ class OrderOutboxServiceJpaTest {
                 .contains("\"eventType\":\"OrderCreatedEvent\"")
                 .contains("\"id\":\"" + orderId + "\"")
                 .contains("\"deliveryId\":\"" + deliveryId + "\"")
-                .contains("\"orderStatus\":\"DELIVERY_REQUESTED\"");
+                .contains("\"orderStatus\":\"DELIVERY_REQUESTED\"")
+                .contains("\"destinationHubId\":\"" + command.destinationHubId() + "\"")
+                .contains("\"deliveryAddress\":\"서울시 테스트 주소\"")
+                .contains("\"receiverName\":\"홍길동\"")
+                .contains("\"receiverSlackId\":\"hong-test\"");
+    }
+
+    private CreateOrderCommand createOrderCommand(Order order) {
+        return new CreateOrderCommand(
+                order.getOrdererUserId(),
+                order.getReceiverCompanyId(),
+                order.getProductId(),
+                order.getQuantity(),
+                order.getRequestMessage(),
+                order.getDueDate(),
+                order.getDepartureHubId(),
+                UUID.randomUUID(),
+                "서울시 테스트 주소",
+                "홍길동",
+                "hong-test"
+        );
     }
 
     private Order createOrder(UUID orderId, UUID deliveryId) {

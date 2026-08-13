@@ -5,14 +5,14 @@ import com.sparta.logistics.application.command.dto.ChangeOrderStatusCommand;
 import com.sparta.logistics.application.command.dto.CreateOrderCommand;
 import com.sparta.logistics.application.command.dto.UpdateOrderCommand;
 import com.sparta.logistics.application.command.usecase.OrderCommandUseCase;
+import com.sparta.logistics.common.code.ErrorResponseCode;
+import com.sparta.logistics.common.exception.ApiException;
 import com.sparta.logistics.domain.entity.Order;
 import com.sparta.logistics.domain.model.OrderStatus;
 import com.sparta.logistics.domain.repository.OrderRepository;
-import com.sparta.logistics.infrastructure.feign.dto.delivery.*;
-import com.sparta.logistics.infrastructure.feign.dto.hub.HubStockRequest;
-import com.sparta.logistics.common.code.ErrorResponseCode;
+import com.sparta.logistics.infrastructure.feign.dto.delivery.DeliveryStatus;
+import com.sparta.logistics.infrastructure.feign.dto.delivery.DeliveryStatusResponse;
 import com.sparta.logistics.presentation.common.dto.response.GeneralResponse;
-import com.sparta.logistics.common.exception.ApiException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -30,7 +30,6 @@ public class OrderCommandService implements OrderCommandUseCase {
     private final OrderOutboxService orderOutboxService;
 
     @Override
-    @Transactional(noRollbackFor = ApiException.class)
     public UUID createOrder(CreateOrderCommand command) {
         orderExternalService.getProduct(command.productId());
 
@@ -46,36 +45,9 @@ public class OrderCommandService implements OrderCommandUseCase {
 
         Order savedOrder = orderRepository.save(order);
 
-        HubStockRequest stockRequest = HubStockRequest.from(savedOrder);
-
-        try {
-            orderExternalService.decreaseStock(stockRequest);
-        } catch (Exception e) {
-            log.error("Stock decrease failed. request={}", stockRequest, e);
-
-            savedOrder.fail();
-            throw new ApiException(ErrorResponseCode.ORDER_STOCK_DECREASE_FAILED);
-        }
-
-        try {
-            GeneralResponse<DeliveryResponse> deliveryResponse =
-                    orderExternalService.createDelivery(CreateDeliveryRequest.from(savedOrder.getId(), command));
-
-            savedOrder.assignDelivery(deliveryResponse.data().id());
-        } catch (Exception e) {
-            savedOrder.fail();
-            try {
-                orderExternalService.increaseStock(stockRequest);
-            } catch (Exception ex) {
-                throw new ApiException(ErrorResponseCode.ORDER_STOCK_RESTORE_FAILED);
-            }
-            throw new ApiException(ErrorResponseCode.ORDER_DELIVERY_CREATE_FAILED);
-        }
-
-        orderOutboxService.saveOrderCreatedEvent(savedOrder);
+        orderOutboxService.saveOrderCreatedEvent(savedOrder, command);
 
         log.info("Order created : {}", savedOrder.getId());
-        log.info("Delivery created : {}", savedOrder.getDeliveryId());
         return savedOrder.getId();
     }
 
@@ -103,23 +75,6 @@ public class OrderCommandService implements OrderCommandUseCase {
     public void cancelOrder(CancelOrderCommand command) {
         Order order = findOrder(command.orderId());
         order.validateCancellable();
-
-        if (order.getDeliveryId() != null) {
-            try {
-                orderExternalService.cancelDelivery(
-                        order.getDeliveryId(),
-                        CancelDeliveryRequest.from(command)
-                );
-            } catch (Exception e) {
-                throw new ApiException(ErrorResponseCode.ORDER_DELIVERY_CANCEL_FAILED);
-            }
-        }
-
-        try {
-            orderExternalService.increaseStock(HubStockRequest.from(order));
-        } catch (Exception e) {
-            throw new ApiException(ErrorResponseCode.ORDER_STOCK_RESTORE_FAILED);
-        }
 
         order.cancel(command.canceledReason());
         orderOutboxService.saveOrderCanceledEvent(order);
