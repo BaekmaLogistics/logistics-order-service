@@ -6,10 +6,8 @@ import com.sparta.logistics.application.command.dto.CreateOrderCommand;
 import com.sparta.logistics.domain.entity.Order;
 import com.sparta.logistics.domain.model.OrderStatus;
 import com.sparta.logistics.domain.repository.OrderRepository;
-import com.sparta.logistics.infrastructure.feign.dto.delivery.DeliveryResponse;
 import com.sparta.logistics.infrastructure.feign.dto.delivery.DeliveryStatus;
 import com.sparta.logistics.infrastructure.feign.dto.delivery.DeliveryStatusResponse;
-import com.sparta.logistics.infrastructure.feign.dto.hub.HubStockRequest;
 import com.sparta.logistics.infrastructure.feign.dto.product.ProductResponse;
 import com.sparta.logistics.presentation.common.dto.response.GeneralResponse;
 import org.junit.jupiter.api.DisplayName;
@@ -49,10 +47,9 @@ class OrderCommandServiceTest {
     private OrderCommandService orderCommandService;
 
     @Test
-    @DisplayName("주문 생성 성공 시 배송 ID를 배정하고 주문 생성 Outbox 이벤트를 저장한다")
+    @DisplayName("주문 생성 성공 시 주문 생성 Outbox 이벤트를 저장한다")
     void createOrder_savesOrderCreatedOutboxEvent() {
         UUID orderId = UUID.randomUUID();
-        UUID deliveryId = UUID.randomUUID();
         CreateOrderCommand command = createOrderCommand();
 
         when(orderExternalService.getProduct(command.productId()))
@@ -69,23 +66,20 @@ class OrderCommandServiceTest {
             ReflectionTestUtils.setField(order, "id", orderId);
             return order;
         });
-        when(orderExternalService.decreaseStock(any(HubStockRequest.class)))
-                .thenReturn(new GeneralResponse<>("OK", null));
-        when(orderExternalService.createDelivery(any()))
-                .thenReturn(new GeneralResponse<>("OK", new DeliveryResponse(deliveryId)));
-
         UUID savedOrderId = orderCommandService.createOrder(command);
 
         ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
         assertThat(savedOrderId).isEqualTo(orderId);
-        verify(orderOutboxService, times(1)).saveOrderCreatedEvent(orderCaptor.capture());
+        verify(orderOutboxService, times(1)).saveOrderCreatedEvent(orderCaptor.capture(), eq(command));
         verify(orderOutboxService, never()).saveOrderCanceledEvent(any(Order.class));
         verify(orderOutboxService, never()).saveOrderCompletedEvent(any(Order.class));
+        verify(orderExternalService, never()).decreaseStock(any());
+        verify(orderExternalService, never()).createDelivery(any());
 
         Order capturedOrder = orderCaptor.getValue();
         assertThat(capturedOrder.getId()).isEqualTo(orderId);
-        assertThat(capturedOrder.getDeliveryId()).isEqualTo(deliveryId);
-        assertThat(capturedOrder.getStatus()).isEqualTo(OrderStatus.DELIVERY_REQUESTED);
+        assertThat(capturedOrder.getDeliveryId()).isNull();
+        assertThat(capturedOrder.getStatus()).isEqualTo(OrderStatus.PENDING);
     }
 
     @Test
@@ -95,17 +89,14 @@ class OrderCommandServiceTest {
         Order order = createDeliveryRequestedOrder(orderId, UUID.randomUUID());
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
-        when(orderExternalService.increaseStock(any(HubStockRequest.class)))
-                .thenReturn(new GeneralResponse<>("OK", null));
-        when(orderExternalService.cancelDelivery(eq(order.getDeliveryId()), any()))
-                .thenReturn(new GeneralResponse<>("OK", null));
-
         orderCommandService.cancelOrder(new CancelOrderCommand(orderId, "고객 요청 취소"));
 
         assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELED);
         verify(orderOutboxService, times(1)).saveOrderCanceledEvent(order);
-        verify(orderOutboxService, never()).saveOrderCreatedEvent(any(Order.class));
+        verify(orderOutboxService, never()).saveOrderCreatedEvent(any(Order.class), any(CreateOrderCommand.class));
         verify(orderOutboxService, never()).saveOrderCompletedEvent(any(Order.class));
+        verify(orderExternalService, never()).increaseStock(any());
+        verify(orderExternalService, never()).cancelDelivery(any(), any());
     }
 
     @Test
@@ -129,7 +120,7 @@ class OrderCommandServiceTest {
 
         assertThat(order.getStatus()).isEqualTo(OrderStatus.COMPLETED);
         verify(orderOutboxService, times(1)).saveOrderCompletedEvent(order);
-        verify(orderOutboxService, never()).saveOrderCreatedEvent(any(Order.class));
+        verify(orderOutboxService, never()).saveOrderCreatedEvent(any(Order.class), any(CreateOrderCommand.class));
         verify(orderOutboxService, never()).saveOrderCanceledEvent(any(Order.class));
     }
 
